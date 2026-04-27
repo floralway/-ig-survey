@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>形象狀態檢測｜質穎形象顏究室®</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    background: #FAF7F4;
+    color: #2C2A28;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .container { width: 100%; max-width: 560px; }
+
+  .progress-wrap { height: 3px; background: #E8E0D8; border-radius: 2px; margin-bottom: 2.5rem; }
+  .progress-fill { height: 100%; background: #C99E85; border-radius: 2px; transition: width 0.5s ease; width: 0%; }
+
+  .slide { display: none; animation: fadeUp 0.35s ease; }
+  .slide.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .brand { font-size: 13px; letter-spacing: 0.1em; color: #C99E85; margin-bottom: 2rem; font-weight: 500; }
+
+  /* Intro */
+  .intro-eyebrow { font-size: 13px; color: #B4AFA9; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+  .intro-title { font-size: 21px; font-weight: 500; color: #2C2A28; line-height: 1.5; margin-bottom: 1.25rem; }
+  .intro-title span { color: #C99E85; }
+  .intro-body { font-size: 15px; color: #5C5752; line-height: 1.95; margin-bottom: 2rem; }
+
+  /* Slide header */
+  .slide-label { font-size: 11px; letter-spacing: 0.1em; color: #B4AFA9; margin-bottom: 0.5rem; }
+  .slide-title { font-size: 18px; font-weight: 500; color: #2C2A28; line-height: 1.55; margin-bottom: 0.35rem; }
+  .slide-sub { font-size: 13px; color: #8C8880; margin-bottom: 1.25rem; line-height: 1.6; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 15px; border: 1px solid #DDD8D2; border-radius: 10px;
+    cursor: pointer; transition: border 0.15s, background 0.15s;
+    user-select: none; background: #fff;
+  }
+  .opt:hover { border-color: #C99E85; background: rgba(201,158,133,0.04); }
+  .opt.sel   { border-color: #C99E85; background: rgba(201,158,133,0.08); }
+  .opt input { accent-color: #C99E85; margin-top: 2px; flex-shrink: 0; }
+  .opt-text  { font-size: 14px; color: #2C2A28; line-height: 1.55; }
+
+  /* Form fields */
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: 13px; color: #8C8880; margin-bottom: 6px; }
+  .field label span { color: #C99E85; }
+  input[type="text"], input[type="email"] {
+    width: 100%; padding: 11px 14px;
+    border: 1px solid #DDD8D2; border-radius: 8px;
+    font-size: 15px; background: #fff; color: #2C2A28;
+    outline: none; transition: border 0.2s; font-family: inherit;
+  }
+  input[type="text"]:focus, input[type="email"]:focus {
+    border-color: #C99E85; box-shadow: 0 0 0 3px rgba(201,158,133,0.12);
+  }
+  .field-err { font-size: 12px; color: #C99E85; margin-top: 5px; display: none; }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; margin-top: 2rem; }
+  .btn-back {
+    padding: 10px 18px; border: 1px solid #DDD8D2; border-radius: 8px;
+    background: transparent; color: #8C8880; font-size: 14px;
+    cursor: pointer; transition: background 0.15s; font-family: inherit;
+  }
+  .btn-back:hover { background: #F0EBE6; }
+  .btn-next {
+    padding: 11px 28px; border: none; border-radius: 8px;
+    background: #C99E85; color: #fff; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.15s; font-family: inherit;
+  }
+  .btn-next:hover { opacity: 0.87; }
+  .step-count { font-size: 13px; color: #B4AFA9; }
+  .nav-right { display: flex; align-items: center; gap: 14px; }
+
+  /* Sending */
+  .sending-wrap { text-align: center; padding: 3rem 0; }
+  .spinner {
+    width: 32px; height: 32px; border: 2px solid #E8E0D8;
+    border-top-color: #C99E85; border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sending-text { font-size: 14px; color: #8C8880; }
+
+  /* Thank you */
+  .thank-wrap { text-align: center; padding: 2rem 0; }
+  .thank-icon { font-size: 36px; margin-bottom: 1rem; }
+  .thank-title { font-size: 19px; font-weight: 500; color: #2C2A28; margin-bottom: 0.75rem; }
+  .thank-body { font-size: 14px; color: #5C5752; line-height: 1.9; }
+
+  /* Social links */
+  .social-wrap { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid #E8E0D8; }
+  .social-label { font-size: 13px; color: #B4AFA9; margin-bottom: 1.25rem; letter-spacing: 0.05em; }
+  .social-links { display: flex; flex-direction: column; gap: 10px; }
+  .social-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border: 1px solid #E8E0D8; border-radius: 10px;
+    text-decoration: none; background: #fff; transition: background 0.15s;
+  }
+  .social-link:hover { background: #FAF0EC; }
+  .social-link img { width: 22px; height: 22px; object-fit: contain; border-radius: 5px; flex-shrink: 0; }
+  .social-link-name { font-size: 14px; color: #2C2A28; font-weight: 500; }
+  .social-link-handle { font-size: 13px; color: #B4AFA9; }
+  .social-link-arrow { margin-left: auto; font-size: 13px; color: #C99E85; }
+
+  @media (max-width: 480px) {
+    body { padding: 1.5rem 1rem 3rem; }
+    .intro-title { font-size: 18px; }
+    .slide-title { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="brand">質穎形象顏究室®</div>
+  <div class="progress-wrap"><div class="progress-fill" id="pb"></div></div>
+
+  <!-- Slide 0: Intro -->
+  <div class="slide active" id="s0">
+    <div class="intro-eyebrow">形象狀態自我檢測</div>
+    <div class="intro-title">你是不是也有這種感覺——<br><span>衣櫃裡的衣服不少，</span><br>但每天出門還是覺得哪裡不對？</div>
+    <div class="intro-body">
+      花 3 分鐘回答這幾個問題，<br>
+      讓 Evelyn 老師看看你現在卡在哪裡。<br><br>
+      填完之後，她會親自看你的答案，<br>
+      給你一個屬於你的方向 🤍
+    </div>
+    <div class="nav">
+      <span></span>
+      <button class="btn-next" onclick="go(1)">開始檢測 →</button>
+    </div>
+  </div>
+
+  <!-- Slide 1: Q1 日常狀態 -->
+  <div class="slide" id="s1">
+    <div class="slide-label">第 1 題</div>
+    <div class="slide-title">早上準備出門的時候，你最常有哪種感覺？</div>
+    <div class="options" id="q1">
+      <label class="opt"><input type="radio" name="q1" value="full_but_empty"><span class="opt-text">衣櫃滿滿的，但每次都覺得沒有衣服穿</span></label>
+      <label class="opt"><input type="radio" name="q1" value="boring"><span class="opt-text">有幾套固定的，但穿久了自己也覺得無聊</span></label>
+      <label class="opt"><input type="radio" name="q1" value="wrong"><span class="opt-text">買了很多，穿起來卻總覺得哪裡不太對</span></label>
+      <label class="opt"><input type="radio" name="q1" value="give_up"><span class="opt-text">乾脆不想了，隨便穿一穿就出門</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(0)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">1 / 10</span>
+        <button class="btn-next" onclick="go(2)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 2: Q2 購物習慣 -->
+  <div class="slide" id="s2">
+    <div class="slide-label">第 2 題</div>
+    <div class="slide-title">你買衣服的時候通常是什麼狀態？</div>
+    <div class="options" id="q2">
+      <label class="opt"><input type="radio" name="q2" value="impulse"><span class="opt-text">看到喜歡的就買，但回家常常不知道怎麼搭</span></label>
+      <label class="opt"><input type="radio" name="q2" value="hesitate"><span class="opt-text">想買但不確定適不適合自己，常常猶豫很久</span></label>
+      <label class="opt"><input type="radio" name="q2" value="trend"><span class="opt-text">跟著流行走，但穿上身又覺得不像自己</span></label>
+      <label class="opt"><input type="radio" name="q2" value="lost"><span class="opt-text">很少買，因為不知道買什麼才對</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(1)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">2 / 10</span>
+        <button class="btn-next" onclick="go(3)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Q3 自我認知 -->
+  <div class="slide" id="s3">
+    <div class="slide-label">第 3 題</div>
+    <div class="slide-title">如果有人問你「你覺得自己現在的穿搭風格是什麼？」你會怎麼回答？</div>
+    <div class="options" id="q3">
+      <label class="opt"><input type="radio" name="q3" value="no_idea"><span class="opt-text">說不上來，我也想知道答案</span></label>
+      <label class="opt"><input type="radio" name="q3" value="safe"><span class="opt-text">就是普通、安全，不出錯但也不出色</span></label>
+      <label class="opt"><input type="radio" name="q3" value="almost"><span class="opt-text">我有自己的風格，但感覺還差了點什麼</span></label>
+      <label class="opt"><input type="radio" name="q3" value="never_thought"><span class="opt-text">我完全沒有想過這個問題</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(2)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">3 / 10</span>
+        <button class="btn-next" onclick="go(4)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: Q4 重要場合 -->
+  <div class="slide" id="s4">
+    <div class="slide-label">第 4 題</div>
+    <div class="slide-title">遇到重要場合——面試、聚會、重要會議——你的第一個念頭通常是？</div>
+    <div class="options" id="q4">
+      <label class="opt"><input type="radio" name="q4" value="anxious"><span class="opt-text">開始焦慮，不知道要穿什麼才對</span></label>
+      <label class="opt"><input type="radio" name="q4" value="safe_again"><span class="opt-text">翻遍衣櫃，最後還是穿那幾套保險的</span></label>
+      <label class="opt"><input type="radio" name="q4" value="last_min"><span class="opt-text">臨時去買，但買回來又覺得不太滿意</span></label>
+      <label class="opt"><input type="radio" name="q4" value="fine"><span class="opt-text">還好，我通常都能找到適合的</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(3)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">4 / 10</span>
+        <button class="btn-next" onclick="go(5)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Q5 他人眼光 -->
+  <div class="slide" id="s5">
+    <div class="slide-label">第 5 題</div>
+    <div class="slide-title">你有沒有過這種時刻——看到某個人走進來，光是她的穿著就讓你覺得「她很有自信」？</div>
+    <div class="options" id="q5">
+      <label class="opt"><input type="radio" name="q5" value="envy"><span class="opt-text">有，而且我很羨慕，但不知道怎麼做到</span></label>
+      <label class="opt"><input type="radio" name="q5" value="want"><span class="opt-text">有，我也想給人這種感覺，只是不知道從哪裡開始</span></label>
+      <label class="opt"><input type="radio" name="q5" value="born"><span class="opt-text">有，但我覺得那是天生的，跟穿搭關係不大</span></label>
+      <label class="opt"><input type="radio" name="q5" value="no_notice"><span class="opt-text">沒有特別注意過</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(4)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">5 / 10</span>
+        <button class="btn-next" onclick="go(6)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: Q6 過去經驗 -->
+  <div class="slide" id="s6">
+    <div class="slide-label">第 6 題</div>
+    <div class="slide-title">你有沒有試過用什麼方法改善自己的穿搭？</div>
+    <div class="options" id="q6">
+      <label class="opt"><input type="radio" name="q6" value="confused_more"><span class="opt-text">有看過很多穿搭內容，但越看越混亂</span></label>
+      <label class="opt"><input type="radio" name="q6" value="analysis_no_use"><span class="opt-text">有做過色彩或骨骼分析，但不知道怎麼實際運用</span></label>
+      <label class="opt"><input type="radio" name="q6" value="friend"><span class="opt-text">有請朋友幫忙，但還是覺得哪裡不對</span></label>
+      <label class="opt"><input type="radio" name="q6" value="never_tried"><span class="opt-text">沒有認真試過，不知道從哪裡開始</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(5)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">6 / 10</span>
+        <button class="btn-next" onclick="go(7)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 7: Q7 內在連結 -->
+  <div class="slide" id="s7">
+    <div class="slide-label">第 7 題</div>
+    <div class="slide-title">你覺得「穿對衣服」這件事，對你來說代表什麼？</div>
+    <div class="options" id="q7">
+      <label class="opt"><input type="radio" name="q7" value="confidence"><span class="opt-text">出門有自信，做什麼都更有狀態</span></label>
+      <label class="opt"><input type="radio" name="q7" value="impression"><span class="opt-text">讓別人對我有好印象，在工作或社交上更順</span></label>
+      <label class="opt"><input type="radio" name="q7" value="invest"><span class="opt-text">是一種對自己的尊重和投資</span></label>
+      <label class="opt"><input type="radio" name="q7" value="never_thought2"><span class="opt-text">老實說我還沒有認真想過這件事</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(6)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">7 / 10</span>
+        <button class="btn-next" onclick="go(8)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Q8 改變意願 -->
+  <div class="slide" id="s8">
+    <div class="slide-label">第 8 題</div>
+    <div class="slide-title">如果有一個人可以幫你把這些都釐清——適合你的顏色、風格、怎麼穿出自信——你會想了解嗎？</div>
+    <div class="options" id="q8">
+      <label class="opt"><input type="radio" name="q8" value="very_want"><span class="opt-text">非常想，我等這個機會很久了</span></label>
+      <label class="opt"><input type="radio" name="q8" value="want_more_info"><span class="opt-text">想，但我想先多了解一點再決定</span></label>
+      <label class="opt"><input type="radio" name="q8" value="hesitate"><span class="opt-text">有點猶豫，不確定自己準備好了沒</span></label>
+      <label class="opt"><input type="radio" name="q8" value="not_yet"><span class="opt-text">目前還沒有這個打算</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(7)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">8 / 10</span>
+        <button class="btn-next" onclick="go(9)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Q9 投資心態 -->
+  <div class="slide" id="s9">
+    <div class="slide-label">第 9 題</div>
+    <div class="slide-title">你如何看待在「外在形象」上投資這件事？</div>
+    <div class="options" id="q9">
+      <label class="opt"><input type="radio" name="q9" value="worth_it"><span class="opt-text">這是對自己最值得的投資之一</span></label>
+      <label class="opt"><input type="radio" name="q9" value="evaluating"><span class="opt-text">重要，但我還在評估值不值得</span></label>
+      <label class="opt"><input type="radio" name="q9" value="unsure"><span class="opt-text">有點猶豫，因為不確定效果</span></label>
+      <label class="opt"><input type="radio" name="q9" value="not_ready"><span class="opt-text">這方面我還沒有準備好投入</span></label>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(8)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">9 / 10</span>
+        <button class="btn-next" onclick="go(10)">下一題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 10: Q10 留資料 -->
+  <div class="slide" id="s10">
+    <div class="slide-label">第 10 題</div>
+    <div class="slide-title">最後，讓 Evelyn 老師認識一下你 🤍</div>
+    <div class="slide-sub">填完之後，她會親自看你的答案寄信給你</div>
+    <div class="field">
+      <label>你希望怎麼被稱呼 <span>*</span></label>
+      <input type="text" id="f-name" placeholder="例：小美、Annie、王小姐⋯">
+      <div class="field-err" id="err-name">請填寫你的稱呼</div>
+    </div>
+    <div class="field">
+      <label>你的電子郵件 <span>*</span></label>
+      <input type="email" id="f-email" placeholder="example@mail.com">
+      <div class="field-err" id="err-email">請填寫有效的電子郵件</div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(9)">← 返回</button>
+      <div class="nav-right">
+        <span class="step-count">10 / 10</span>
+        <button class="btn-next" onclick="validateAndSubmit()">送出 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: Sending -->
+  <div class="slide" id="s11">
+    <div class="sending-wrap">
+      <div class="spinner"></div>
+      <div class="sending-text">正在送出你的答案⋯</div>
+    </div>
+  </div>
+
+  <!-- Slide 12: Thank you -->
+  <div class="slide" id="s12">
+    <div class="thank-wrap">
+      <div class="thank-icon">🤍</div>
+      <div class="thank-title">謝謝你的填寫</div>
+      <div class="thank-body">
+        Evelyn 老師已經收到你的答案了，<br>
+        快去收信——<br>
+        裡面有她想跟你說的話。
+      </div>
+      <div class="social-wrap">
+        <div class="social-label">在等信的時候，也歡迎來找我 🌿</div>
+        <div class="social-links">
+          <a class="social-link" href="https://lin.ee/WnDhDsF" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE">
+            <span class="social-link-name">加入 LINE 官方帳號</span>
+            <span class="social-link-arrow">→</span>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/go_floralway/" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="Instagram">
+            <span class="social-link-name">追蹤 Instagram</span>
+            <span class="social-link-handle">@go_floralway</span>
+            <span class="social-link-arrow">→</span>
+          </a>
+          <a class="social-link" href="https://www.facebook.com/GoFloralway/" target="_blank">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook">
+            <span class="social-link-name">追蹤 Facebook</span>
+            <span class="social-link-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyONoHjLrnSxiIIIkMw7AArFzOMzVSv-rqrldg7LSl63P06zwLYSGZN39P1pJ0ZfF0r/exec';
+  const BOOKING_URL     = 'https://calendly.com/floralway-image/30min';
+  const LIVESTREAM_URL  = '#';
+
+  function go(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.getElementById('s' + n).classList.add('active');
+    const pct = n === 0 ? 0 : n >= 11 ? 100 : Math.round((n / 10) * 100);
+    document.getElementById('pb').style.width = pct + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Click handler
+  document.querySelectorAll('.opt').forEach(item => {
+    item.addEventListener('click', function(e) {
+      const inp = this.querySelector('input');
+      if (!inp || e.target === inp) return;
+      if (inp.type === 'radio') {
+        document.querySelectorAll('input[name="' + inp.name + '"]').forEach(r => {
+          r.closest('.opt').classList.remove('sel');
+        });
+        inp.checked = true;
+        this.classList.add('sel');
+      }
+    });
+  });
+
+  function validateAndSubmit() {
+    const name  = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    let ok = true;
+    document.getElementById('err-name').style.display  = 'none';
+    document.getElementById('err-email').style.display = 'none';
+    if (!name)  { document.getElementById('err-name').style.display  = 'block'; ok = false; }
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      document.getElementById('err-email').style.display = 'block'; ok = false;
+    }
+    if (ok) submitSurvey();
+  }
+
+  // ── Scoring ──────────────────────────────────────
+  function calcScore() {
+    let frustration = 0; // 困擾程度 Q1~Q6
+    let mindset     = 0; // 內在認同 Q7
+    let willingness = 0; // 改變意願 Q8~Q9
+
+    const v = name => {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el ? el.value : '';
+    };
+
+    // Q1 日常狀態
+    const q1 = v('q1');
+    if (['full_but_empty','wrong'].includes(q1))   frustration += 3;
+    else if (q1 === 'boring')                       frustration += 2;
+    else if (q1 === 'give_up')                      frustration += 2;
+
+    // Q2 購物習慣
+    const q2 = v('q2');
+    if (['hesitate','lost'].includes(q2))           frustration += 3;
+    else if (['impulse','trend'].includes(q2))      frustration += 2;
+
+    // Q3 自我認知
+    const q3 = v('q3');
+    if (['no_idea','never_thought'].includes(q3))   frustration += 3;
+    else if (q3 === 'safe')                         frustration += 2;
+    else if (q3 === 'almost')                       frustration += 1;
+
+    // Q4 重要場合
+    const q4 = v('q4');
+    if (['anxious','last_min'].includes(q4))        frustration += 3;
+    else if (q4 === 'safe_again')                   frustration += 2;
+    else if (q4 === 'fine')                         frustration += 0;
+
+    // Q5 他人眼光
+    const q5 = v('q5');
+    if (['envy','want'].includes(q5))               frustration += 3;
+    else if (q5 === 'born')                         frustration += 1;
+
+    // Q6 過去經驗
+    const q6 = v('q6');
+    if (['confused_more','analysis_no_use'].includes(q6)) frustration += 3;
+    else if (['friend','never_tried'].includes(q6))        frustration += 2;
+
+    // Q7 內在認同
+    const q7 = v('q7');
+    if (['confidence','invest'].includes(q7))       mindset += 3;
+    else if (q7 === 'impression')                   mindset += 2;
+    else if (q7 === 'never_thought2')               mindset += 1;
+
+    // Q8 改變意願
+    const q8 = v('q8');
+    if (q8 === 'very_want')                         willingness += 3;
+    else if (q8 === 'want_more_info')               willingness += 2;
+    else if (q8 === 'hesitate')                     willingness += 1;
+
+    // Q9 投資心態
+    const q9 = v('q9');
+    if (q9 === 'worth_it')                          willingness += 3;
+    else if (q9 === 'evaluating')                   willingness += 2;
+    else if (q9 === 'unsure')                       willingness += 1;
+
+    return { frustration, mindset, willingness, total: frustration + mindset + willingness };
+  }
+
+  function getGrade(scores) {
+    const { frustration, mindset, willingness } = scores;
+    // A: 困擾深 + 有認同 + 願意改變
+    if (willingness >= 4 && mindset >= 2 && frustration >= 10) return 'A';
+    // B: 有困擾 + 還在猶豫
+    if (frustration >= 8 || (willingness >= 2 && mindset >= 1)) return 'B';
+    return 'C';
+  }
+
+  function collectData() {
+    const v = name => {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el ? el.value : '';
+    };
+    const scores = calcScore();
+    const grade  = getGrade(scores);
+    return {
+      name:  document.getElementById('f-name').value.trim(),
+      email: document.getElementById('f-email').value.trim(),
+      grade,
+      score: scores.total,
+      scores: JSON.stringify(scores),
+      source: 'ig',
+      q1: v('q1'), q2: v('q2'), q3: v('q3'), q4: v('q4'), q5: v('q5'),
+      q6: v('q6'), q7: v('q7'), q8: v('q8'), q9: v('q9'),
+    };
+  }
+
+  async function submitSurvey() {
+    const data = collectData();
+    go(11);
+    try {
+      const params = new URLSearchParams({ payload: JSON.stringify(data) });
+      await fetch(APPS_SCRIPT_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+    } catch(e) { console.warn(e); }
+    await new Promise(r => setTimeout(r, 1000));
+    go(12);
+  }
+</script>
+</body>
+</html>
