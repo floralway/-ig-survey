@@ -448,7 +448,7 @@
 </div>
 
 <script>
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9l7TSbW1PN1N4AinYHN6FBg4ZWcOii5l00WqyeLeUgR3j3YMCS8MUMaQxTC3QhL2u/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyONoHjLrnSxiIIIkMw7AArFzOMzVSv-rqrldg7LSl63P06zwLYSGZN39P1pJ0ZfF0r/exec';
   const BOOKING_URL     = 'https://calendly.com/floralway-image/30min';
   const LIVESTREAM_URL  = '#';
 
@@ -557,8 +557,9 @@
     const { frustration, mindset, willingness } = scores;
     // A: 困擾深 + 有認同 + 願意改變
     if (willingness >= 4 && mindset >= 2 && frustration >= 10) return 'A';
-    // B: 有困擾 + 還在猶豫
-    if (frustration >= 8 || (willingness >= 2 && mindset >= 1)) return 'B';
+    // B: 有一定困擾 + 有基本認同或意願
+    if (frustration >= 10 || (willingness >= 2 && mindset >= 1 && frustration >= 8)) return 'B';
+    // C: 困擾不深 / 還在觀望
     return 'C';
   }
 
